@@ -1,4 +1,7 @@
-##Compile:
+##Compile on GNU/Linux:
+
+You will need GNU GMP, its the big numbers libary used.
+You can get it here: https://gmplib.org/#DOWNLOAD.
 
 cd src/ && qmake && make all
 
