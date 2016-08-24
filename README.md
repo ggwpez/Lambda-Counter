@@ -16,5 +16,5 @@ n f(n)
 ##General:
 
 Code sometimes maybe looks obfuscated, but thats only due to optimisation.
-Feel free to make suggestions on how to transform it into a recursive algorithm,
+Feel free to make suggestions on how to transform it into a iterative algorithm,
 or other general improvements.
