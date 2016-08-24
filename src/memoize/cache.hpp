@@ -12,19 +12,23 @@
 #include <type_traits>
 #include <experimental/type_traits>
 #include <map>
+#include <list>
 #include <unordered_map>
 #include <utility>
 #include <tuple>
 #include <functional>
 #include <algorithm>
+#include <cassert>
 
 /// How old values should timeout.
-/// Actually is only NEVER supported,
+/// Actually NEVER is the only one supported.
 enum class timeout_policy_t
 {
     NEVER,
     LRU
 };
+
+#define LRU_MAX 50000
 
 /// This cache is able to have different function and cache types.
 /// If you e.g. have a function fib(int* n) which calculates something for *n,
@@ -33,6 +37,8 @@ enum class timeout_policy_t
 ///     make_cache(fib, int);
 ///
 /// would do this.
+/// It dereferences the second argument and saves it as key.
+///
 ///
 /// fptr_t: Function type
 /// Keys: Types of the Keys
@@ -63,8 +69,8 @@ struct Cache
                                 std::unordered_map<key_t, R>,
                                 std::map<key_t, R>> cache_map_t;
 
-    typedef std::size_t internal_cache_it_t;
-    typedef std::vector<R> internal_cache_t;
+    typedef std::list<R> internal_cache_t;                              //use list for constant insert operations, traversion done in const time with iterators
+    typedef typename internal_cache_t::iterator internal_cache_it_t;
 
     typedef std::conditional_t<use_unordered,
                                 std::unordered_map<key_t, internal_cache_it_t>,
@@ -76,31 +82,39 @@ struct Cache
                                  cache_vector_t,
                                  void> cache_t; // void means error, already catched througth static_assert
 
-    //internal_cache_t internal_cache;
-    //internal_cache_it_t internal_it;
+    typedef typename cache_t::iterator cache_it_t;
 
+    // Tnternal cache, only used in LRU mode
+    internal_cache_t internal_cache;
+    internal_cache_it_t internal_it;
+
+    // Always used, in LRU it uses the internal_cache
     cache_t cache;
-    //std::size_t cache_it;
+    cache_it_t cache_it;
 
     Cache(fptr_t arg)
         : fptr(arg),
-          //internal_cache(50000),  // <- this is massive overhead for small calculations
-          //internal_it(0),
-          cache()
+          internal_cache(),
+          internal_it(internal_cache.begin()),
+          cache(),
+          cache_it(cache.begin())
     { }
 
+    // const& -> &
     template<class T>
-    inline constexpr std::remove_const_t<T> const& getKey(std::remove_const_t<T>& key)
+    inline constexpr std::remove_const_t<std::remove_reference_t<T>> const& getKey(std::remove_reference_t<T>& key)
     {
         return key;
     }
 
+    // const& -> const&
     template<class T>
     inline constexpr T const& getKey(T const& key)
     {
         return key;
     }
 
+    // * const& -> const&
     template<class T>
     inline constexpr T const& getKey(T* const& key)
     {
@@ -127,29 +141,45 @@ struct Cache
     };
 
     /// This overload is for the cache_vector_t
-    /*template<class... Args>
+    template<class... Args>
     typename std::enable_if<(sizeof...(Args), std::is_same<cache_t, cache_vector_t>::value), std::remove_const_t<std::decay_t<R>>>::type
     const& call(Args const&... args)
     {
         d_key_t new_keys(getKey(args)...);
-
         auto&& it(cache.find(new_keys));
 
         if (it == cache.end())      // not cached
         {
-            if (internal_it == cache.size())    // reached end, time to overwrite something
-                internal_it = 0;
+            if (cache.size() == LRU_MAX)        // cache is full, time to overwrite old objects
+            {
+                if (internal_it == internal_cache.end())
+                {
+                    assert(cache_it == cache.end());
+                    internal_it = internal_cache.begin();
+                    cache_it = cache.begin();
+                }
 
-           // if (cache.size() >= 50000)
-
-
-            internal_cache[internal_it] = fptr(args...);
-
-            return internal_cache[internal_it++];
+                *internal_it = fptr(args...);
+                cache.erase(cache_it);
+                cache.insert(cache_it, std::pair<key_t, internal_cache_it_t>(new_keys, internal_it));
+                ++cache_it;
+                return *internal_it++;
+            }
+            else
+            {
+                internal_cache.push_back(fptr(args...));
+                cache[new_keys] = internal_cache.end();
+                return internal_cache.back();
+            }
         }
-        else                        // was cached
-            return internal_cache[it->second];
-    };*/
+        else                    // was cached
+            return *it->second;
+    };
+
+    inline std::size_t size() const
+    {
+        return cache.size();
+    }
 
     inline void clear()
     {

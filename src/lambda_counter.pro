@@ -4,7 +4,8 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += \
-    main.cpp
+    main.cpp \
+    iterative.cpp
 
 # CONFIG -= exceptions # somehow this wont disabl exceptions
 QMAKE_LIBS += -lgmpxx -lgmp
@@ -19,7 +20,8 @@ HEADERS += \
     memoize/template_filter.hpp \
     memoize/template_for_all.hpp \
     memoize/template_predicates.hpp \
-    memoize/tuple_hash.hpp
+    memoize/tuple_hash.hpp \
+    multiarray.hpp
 
 debug {
     DEFINES += DEBUG
