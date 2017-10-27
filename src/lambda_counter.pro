@@ -1,33 +1,32 @@
 TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
-CONFIG -= qt
+CONFIG -= qt c++11
 
 SOURCES += \
-    main.cpp \
-    iterative.cpp
+	main.cpp
 
 # CONFIG -= exceptions # somehow this wont disabl exceptions
 QMAKE_LIBS += -lgmpxx -lgmp
 QMAKE_LFLAGS += -static
 
 HEADERS += \
-    mpz_wrapper.hpp \
-    memoize/cache.hpp \
-    memoize/dontcache.hpp \
-    memoize/function_traits.hpp \
-    memoize/template_conditional2.hpp \
-    memoize/template_filter.hpp \
-    memoize/template_for_all.hpp \
-    memoize/template_predicates.hpp \
-    memoize/tuple_hash.hpp \
-    multiarray.hpp
+	mpz_wrapper.hpp \
+	memoize/cache.hpp \
+	memoize/dontcache.hpp \
+	memoize/function_traits.hpp \
+	memoize/template_conditional2.hpp \
+	memoize/template_filter.hpp \
+	memoize/template_for_all.hpp \
+	memoize/template_predicates.hpp \
+	memoize/tuple_hash.hpp \
+	multiarray.hpp
 
 debug {
-    DEFINES += DEBUG
+	DEFINES += DEBUG
 }
 release {
-    DEFINES -= DEBUG
+	DEFINES -= DEBUG
 }
 
 QMAKE_CFLAGS_RELEASE += -fno-exceptions
