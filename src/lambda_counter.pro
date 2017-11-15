@@ -20,7 +20,8 @@ HEADERS += \
 	memoize/template_for_all.hpp \
 	memoize/template_predicates.hpp \
 	memoize/tuple_hash.hpp \
-	multiarray.hpp
+	multiarray.hpp \
+	memoize/lru_cache.hpp
 
 debug {
 	DEFINES += DEBUG
@@ -30,7 +31,7 @@ release {
 }
 
 QMAKE_CFLAGS_RELEASE += -fno-exceptions
-QMAKE_CXXFLAGS_RELEASE += -fno-exceptions
+QMAKE_CXXFLAGS_RELEASE += -fno-exceptions -fno-rtti
 
 QMAKE_CXXFLAGS += -std=c++17
 QMAKE_CXXFLAGS_RELEASE -= -O2

@@ -10,25 +10,42 @@
 ///
 
 #include "mpz_wrapper.hpp"
+#include "memoize/lru_cache.hpp"
 #include <memoize/cache.hpp>
+#include <tuple>
 
 #include <iostream>
 
+#define LRU_SIZE 50000
+
 /// Forward decl, for the functions needed my the algorith
 uint64_t const& var(uint64_t const& n, uint64_t const& k);
+mpz_wrapper term(uint64_t const& n, uint64_t const& k, bool L, bool R);
 mpz_wrapper lam(uint64_t const& n, uint64_t const& k);
 mpz_wrapper app(uint64_t const& n, uint64_t const& k, bool R);
-mpz_wrapper term(uint64_t const& n, uint64_t const& k, bool L, bool R);
 
-/// Caches for caching the recursive functions
-auto cache_term = make_cache(term, uint64_t, uint64_t, bool, bool);
-auto cache_lam = make_cache(lam, uint64_t, uint64_t);
-auto cache_app = make_cache(app, uint64_t, uint64_t, bool);
+#define MY_CACHE 1
 
-/// Calling a functions is now expressed by calling the corresponding cache
-#define CALL_TERM(...) cache_term.call(__VA_ARGS__)
-#define CALL_LAM(...) cache_lam.call(__VA_ARGS__)
-#define CALL_APP(...) cache_app.call(__VA_ARGS__)
+#if MY_CACHE
+	/// Caches for caching the recursive functions
+	auto cache_term = make_cache(term, uint64_t, uint64_t, bool, bool);
+	auto cache_lam = make_cache(lam, uint64_t, uint64_t);
+	auto cache_app = make_cache(app, uint64_t, uint64_t, bool);
+
+	/// Calling a functions is now expressed by calling the corresponding cache
+	#define CALL_TERM(...) cache_term.call(__VA_ARGS__)
+	#define CALL_LAM(...) cache_lam.call(__VA_ARGS__)
+	#define CALL_APP(...) cache_app.call(__VA_ARGS__)
+#else
+	// Certanly we dont want to use references here, otherwise enjoy the SIGSEGV
+	lru11::Cache<std::tuple<uint64_t, uint64_t, bool, bool>, mpz_wrapper> lru_cache_term(LRU_SIZE,0);
+	lru11::Cache<std::tuple<uint64_t, uint64_t>, mpz_wrapper> lru_cache_lam(LRU_SIZE,0);
+	lru11::Cache<std::tuple<uint64_t, uint64_t, bool>, mpz_wrapper> lru_cache_app(LRU_SIZE,0);
+
+	#define CALL_TERM(...) lru_cache_term.call(term, std::make_tuple(__VA_ARGS__))
+	#define CALL_LAM(...) lru_cache_lam.call(lam, std::make_tuple(__VA_ARGS__))
+	#define CALL_APP(...) lru_cache_app.call(app, std::make_tuple(__VA_ARGS__))
+#endif
 
 /// Just for reference returns
 uint64_t const always_zero(0);

@@ -84,7 +84,7 @@ struct Cache
 
 	typedef typename cache_t::iterator cache_it_t;
 
-	// Tnternal cache, only used in LRU mode
+	// Internal cache, only used in LRU mode
 	internal_cache_t internal_cache;
 	internal_cache_it_t internal_it;
 
@@ -123,7 +123,7 @@ struct Cache
 
 	/// This overload is for the cache_map_t
 	template<class... Args>
-	typename std::enable_if<(sizeof...(Args), std::is_same<cache_t, cache_map_t>::value), std::remove_const_t<std::decay_t<R>>>::type
+	typename std::enable_if<(sizeof...(Args), std::is_same<cache_t, cache_map_t>::value) && tp == timeout_policy_t::NEVER, std::remove_const_t<std::decay_t<R>>>::type
 	const& call(Args const&... args)
 	{
 		decayed_key_t new_keys(getKey(args)...);
@@ -141,7 +141,7 @@ struct Cache
 
 	/// This overload is for the cache_vector_t
 	template<class... Args>
-	typename std::enable_if<(sizeof...(Args), std::is_same<cache_t, cache_vector_t>::value), std::remove_const_t<std::decay_t<R>>>::type
+	typename std::enable_if<(sizeof...(Args), std::is_same<cache_t, cache_vector_t>::value) && tp == timeout_policy_t::NEVER, std::remove_const_t<std::decay_t<R>>>::type
 	const& call(Args const&... args)
 	{
 		decayed_key_t new_keys(getKey(args)...);
@@ -166,6 +166,7 @@ struct Cache
 			}
 			else
 			{
+				// Maybe emplace_back
 				internal_cache.push_back(fptr(args...));
 				cache[new_keys] = internal_cache.end();
 				return internal_cache.back();
