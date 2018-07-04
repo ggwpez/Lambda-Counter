@@ -42,6 +42,7 @@ enum class timeout_policy_t
 ///
 /// fptr_t: Function type
 /// Keys:   Types of the Keys
+///
 template<timeout_policy_t tp, class fptr_t, class... Keys>
 struct Cache
 {

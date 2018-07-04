@@ -42,6 +42,7 @@
 #include <tuple>
 #include <iostream>
 #include <experimental/tuple>
+#include <functional>
 
 namespace std
 {

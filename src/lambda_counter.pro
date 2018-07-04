@@ -4,7 +4,9 @@ CONFIG -= app_bundle
 CONFIG -= qt c++11
 
 SOURCES += \
-	main.cpp
+	main.cpp \
+    counter.cpp \
+    static_stack.cpp
 
 # CONFIG -= exceptions # somehow this wont disabl exceptions
 QMAKE_LIBS += -lgmpxx -lgmp
@@ -21,7 +23,10 @@ HEADERS += \
 	memoize/template_predicates.hpp \
 	memoize/tuple_hash.hpp \
 	multiarray.hpp \
-	memoize/lru_cache.hpp
+	memoize/lru_cache.hpp \
+    counter.hpp \
+    static_stack.hpp \
+    die.hpp
 
 debug {
 	DEFINES += DEBUG
