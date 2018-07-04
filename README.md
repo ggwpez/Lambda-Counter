@@ -25,5 +25,4 @@ end f(end)
 ### General
 
 Code sometimes maybe looks obfuscated, but thats only due to optimisation.  
-Feel free to make suggestions on how to transform it into an iterative algorithm,
-or other general improvements.
+Feel free to fork.
