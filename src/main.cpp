@@ -10,13 +10,13 @@
 ///
 
 #include "mpz_wrapper.hpp"
-#include "memoize/lru_cache.hpp"
-#include <memoize/cache.hpp>
+#include "lrucache11/LRUCache11.hpp"
+#include "memoize/cache.hpp"
 #include <tuple>
 
 #include <iostream>
 
-#define LRU_SIZE 50000
+//#define LRU_SIZE 50000
 
 /// Forward decl, for the functions needed my the algorith
 uint64_t const& var(uint64_t const& n, uint64_t const& k);

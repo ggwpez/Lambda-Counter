@@ -28,7 +28,7 @@ enum class timeout_policy_t
 	LRU
 };
 
-#define LRU_MAX 50000
+#define LRU_MAX 200000
 
 /// This cache is able to have different function and cache types.
 /// If you e.g. have a function fib(int* n) which calculates something for *n,
