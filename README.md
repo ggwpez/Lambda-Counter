@@ -1,3 +1,10 @@
+### Abstract
+The three types of terms of the [Lambda-Calculus](https://en.wikipedia.org/wiki/Lambda_calculus) can be categorised by various constraints.  
+One such constraints is the the length of their standart representation.  
+This program counts the number of closed Lambda terms with a given length.  
+This implementation is currently by far the best.  
+ref OEIS [A260661](https://oeis.org/A260661).  
+
 ### Prerequisites
 
 You will need GNU GMP, its the big numbers libary used.  
@@ -24,5 +31,4 @@ end f(end)
 
 ### General
 
-Code sometimes maybe looks obfuscated, but thats only due to optimisation.  
-Feel free to fork.
+Code sometimes looks obfuscated, but thats only due to optimisation.  
