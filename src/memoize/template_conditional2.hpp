@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2016-2021 Oliver Tale-Yazdi <oliver@tasty.limo>
+ *
+ * SPDX-License-Identifier: GPL-3.0-only
+ */
+
 #pragma once
 
 #define tem template
@@ -9,19 +15,19 @@ tem<bool Cond1, bool Cond2, typ t, typ ft, typ ff> struct conditional23;
 
 tem<bool Cond2, typ t, typ ft, typ ff> struct conditional23<true, Cond2, t, ft, ff>
 {
-	typedef t type;
+    typedef t type;
 };
 
 tem<typ t, typ ft, typ ff> struct conditional23<false, true, t, ft, ff>
 {
-	typedef ft type;
+    typedef ft type;
 };
 
 tem<typ t, typ ft, typ ff> struct conditional23<false, false, t, ft, ff>
 {
-	typedef ff type;
+    typedef ff type;
 };
 
 tem<bool Cond1, bool Cond2, typ t, typ ft, typ ff> using conditional23_t =
-	typename conditional23<Cond1, Cond2, t, ft, ff>::type;
+    typename conditional23<Cond1, Cond2, t, ft, ff>::type;
 } // namespace std

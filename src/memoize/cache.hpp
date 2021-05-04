@@ -1,5 +1,10 @@
-#ifndef CACHE_HPP
-#define CACHE_HPP
+/*
+ * SPDX-FileCopyrightText: 2016-2021 Oliver Tale-Yazdi <oliver@tasty.limo>
+ *
+ * SPDX-License-Identifier: GPL-3.0-only
+ */
+
+#pragma once
 
 #include "dontcache.hpp"
 #include "function_traits.hpp"
@@ -185,5 +190,3 @@ template <timeout_policy_t tp, class fptr_t, class... Keys> struct Cache
 
 #define make_cache(fptr, ...) (Cache<timeout_policy_t::NEVER, decltype(fptr), __VA_ARGS__>(fptr))
 #define get_cache_type(fptr, ...) Cache<timeout_policy_t::NEVER, decltype(fptr), __VA_ARGS__>
-
-#endif // CACHE_HPP
