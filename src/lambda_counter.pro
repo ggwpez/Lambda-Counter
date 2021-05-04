@@ -23,7 +23,7 @@ HEADERS += \
 	multiarray.hpp
 
 debug {
-	DEFINES += DEBUG ENABLE_HITRATE
+	DEFINES += DEBUG
 }
 release {
 	DEFINES -= DEBUG
