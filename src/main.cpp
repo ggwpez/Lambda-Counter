@@ -15,7 +15,8 @@
 ///
 ///
 
-#define LRU_MAX 400000
+#define LRU_MAX 400
+#define CACHE_STATS true
 
 #include "memoize/cache.hpp"
 #include "mpz_wrapper.hpp"
@@ -34,9 +35,9 @@ auto cache_lam = make_cache(lam, uint64_t, uint64_t);
 auto cache_app = make_cache(app, uint64_t, uint64_t, bool);
 
 /// Calling a functions is now expressed by calling the corresponding cache
-#define CALL_TERM(...) cache_term.call(__VA_ARGS__)
-#define CALL_LAM(...) cache_lam.call(__VA_ARGS__)
-#define CALL_APP(...) cache_app.call(__VA_ARGS__)
+#define CALL_TERM(...) cache_term(__VA_ARGS__)
+#define CALL_LAM(...) cache_lam(__VA_ARGS__)
+#define CALL_APP(...) cache_app(__VA_ARGS__)
 
 /// Just for reference returns
 uint64_t const always_zero(0);
@@ -126,7 +127,15 @@ int main(int argc, char **argv)
     for (unsigned n = start; n <= end; ++n)
     {
         mpz_wrapper result = CALL_TERM(n, 0, false, false);
-        std::cout << n << ' ' << result << std::endl;
+        //std::cout << n /*<< ' ' << result*/ << std::endl;
+
+        if (CACHE_STATS && n % 10 == 0)
+        {
+            std::cout << n /*<< ' ' << result*/ << std::endl;
+            std::cout << "App:  " << cache_app.stats() << std::endl
+                    << "Lam:  " << cache_lam.stats() << std::endl
+                    << "Term: " << cache_term.stats() << std::endl;
+        }
     }
 
     return 0;

@@ -24,6 +24,7 @@
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
+#include <sstream>
 
 /// How old values should timeout.
 /// Actually NEVER is the only one supported.
@@ -45,7 +46,7 @@ enum class timeout_policy_t
 ///
 /// fptr_t: Function type
 /// Keys:   Types of the Keys
-template <timeout_policy_t tp, class fptr_t, class... Keys> struct Cache
+template <timeout_policy_t tp, bool collect_stats, class fptr_t, class... Keys> struct Cache
 {
     static_assert(std::is_function<fptr_t>::value, "Pass a function pointer type as fptr_t template argument.");
 
@@ -94,6 +95,9 @@ template <timeout_policy_t tp, class fptr_t, class... Keys> struct Cache
     cache_t cache;
     cache_it_t cache_it;
 
+    // stas
+    uint_fast64_t calls = 0, hit = 0, miss = 0, replaced = 0;
+
     Cache(fptr_t arg)
         : fptr(arg), internal_cache(), internal_it(internal_cache.begin()), cache(), cache_it(cache.begin())
     {
@@ -123,19 +127,27 @@ template <timeout_policy_t tp, class fptr_t, class... Keys> struct Cache
     typename std::enable_if<(sizeof...(Args), std::is_same<cache_t, cache_map_t>::value) &&
                                 tp == timeout_policy_t::NEVER,
                             std::remove_const_t<std::decay_t<R>>>::type const &
-    call(Args const &... args)
+    operator()(Args const &... args)
     {
+        if constexpr (collect_stats)
+            ++calls;
         decayed_key_t new_keys(getKey(args)...);
         auto &&it(cache.find(new_keys));
 
         if (it == cache.end()) // not cached
         {
+            if constexpr (collect_stats)
+                ++miss;
             auto &&pos(cache.insert(std::pair<key_t, R>(std::move(new_keys), fptr(args...))));
 
             return pos.first->second;
         }
         else // was cached
+        {
+            if constexpr (collect_stats)
+                ++hit;
             return it->second;
+        }
     };
 
     /// This overload is for the cache_vector_t
@@ -143,15 +155,21 @@ template <timeout_policy_t tp, class fptr_t, class... Keys> struct Cache
     typename std::enable_if<(sizeof...(Args), std::is_same<cache_t, cache_vector_t>::value) &&
                                 tp == timeout_policy_t::NEVER,
                             std::remove_const_t<std::decay_t<R>>>::type const &
-    call(Args const &... args)
+    operator()(Args const &... args)
     {
+        if constexpr (collect_stats)
+            ++calls;
         decayed_key_t new_keys(getKey(args)...);
         auto &&it(cache.find(new_keys));
 
         if (it == cache.end()) // not cached
         {
+            if constexpr (collect_stats)
+                ++miss;
             if (cache.size() == LRU_MAX) // cache is full, time to overwrite old objects
             {
+                if constexpr (collect_stats)
+                    ++replaced;
                 if (internal_it == internal_cache.end())
                 {
                     assert(cache_it == cache.end());
@@ -174,7 +192,11 @@ template <timeout_policy_t tp, class fptr_t, class... Keys> struct Cache
             }
         }
         else // was cached
+        {
+            if constexpr (collect_stats)
+                ++hit;
             return *it->second;
+        }
     };
 
     inline std::size_t size() const
@@ -186,7 +208,17 @@ template <timeout_policy_t tp, class fptr_t, class... Keys> struct Cache
     {
         cache.clear();
     }
+
+    std::string stats()
+    {
+        std::stringstream ret;
+        if constexpr (collect_stats)
+        {
+            ret << "Calls " << calls << ", hit " << hit << ", miss " << miss << ", replaced " << replaced << ", hitrate " << double(hit)/calls*100 << "%";
+        }
+        return ret.str();
+    }
 };
 
-#define make_cache(fptr, ...) (Cache<timeout_policy_t::NEVER, decltype(fptr), __VA_ARGS__>(fptr))
-#define get_cache_type(fptr, ...) Cache<timeout_policy_t::NEVER, decltype(fptr), __VA_ARGS__>
+#define make_cache(fptr, ...) (Cache<timeout_policy_t::NEVER, CACHE_STATS, decltype(fptr), __VA_ARGS__>(fptr))
+#define get_cache_type(fptr, ...) Cache<timeout_policy_t::NEVER, CACHE_STATS, decltype(fptr), __VA_ARGS__>
